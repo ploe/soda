@@ -1,0 +1,1 @@
+i686-w64-mingw32-gcc-8.2.0 -o app main.c $(pkg-config ~/sdl2.pc --cflags --libs) $(pkg-config ~/SDL2_image.pc --cflags --libs) -lmingw32 -lSDL2main -lSDL
