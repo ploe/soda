@@ -1,3 +1,6 @@
+#ifndef TR_CREW
+#define TR_CREW
+
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -20,12 +23,13 @@ typedef CrewStatus (*CrewMethod)(Crew *);
 	every frame.	*/ 
 typedef struct Crew {
 	char *tag;
-	void *attributes;
 	CrewMethod type, update, destroy;
 	CrewStatus status;	
 	struct Crew *next;
 } Crew;
-static Crew *top = NULL;
 
+/*	Methods for the Crew module	*/
 Crew *CrewNew(CrewMethod type);
 bool CrewRoll();
+
+#endif
