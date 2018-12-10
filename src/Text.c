@@ -2,12 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef char *Text;
+#include "Panic.h"
 
-void Panic(int i, const char *prompt) {
-	fprintf (stderr, "%s\n", prompt);
-	exit(i);
-}
+typedef char *Text;
 
 enum {
 	ELOAD = -1,
