@@ -1,10 +1,10 @@
 #include <stdbool.h>
 
 #include <lauxlib.h>
-#include <Lua.h>
+#include <lua.h>
 #include <lualib.h>
 
-#include "Lua.h"
+#include "LuaState.h"
 #include "Panic.h"
 #include "Text.h"
 
@@ -23,7 +23,7 @@ lua_State *LuaInit() {
 	bool bootstrap = LuaImport("bootstrap");
 	if (!bootstrap) {
 		lua_close(L);
-		Panic(ELUA, "cannot open bootstrap: No such file or directory");
+		Panic(ELUA, "cannot find bootstrap script: No such file or directory");
 	}
 
 	return L;
@@ -72,7 +72,6 @@ bool LuaImport(const char *slug) {
 	const char **ext = NULL;
 	for (ext = extensions; *ext != NULL; ext++) {
 		Text file = TextNew("./%s%s", slug, *ext);
-		puts(file);
 		if (luaL_loadfile(L, file) || lua_pcall(L, 0, 0, 0)) {
 			file = TextFree(file);
 			fprintf(stderr, "%s\n", lua_tostring(L, -1));

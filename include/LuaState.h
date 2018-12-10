@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include <lua.h>
+
 lua_State *LuaInit();
 bool LuaImport(const char *file);
 lua_State *LuaGet();
