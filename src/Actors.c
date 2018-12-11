@@ -3,7 +3,10 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include <lua.h>
+
 #include "Crew.h"
+#include "LuaState.h"
 #include "Window.h"
 
 static SDL_Texture *TextureNew(char *path, SDL_Renderer *renderer) {
@@ -23,7 +26,6 @@ typedef struct Actor {
 	SDL_RendererFlip flip;
 	bool render;
 	Uint8 alpha;
-//	ActorMethod type, update, destroy;
 } Actor;
 
 Actor *top = NULL;
@@ -36,6 +38,11 @@ static Actor *ActorNew() {
 	}
 
 	return a;
+}
+
+static int ActorLuaNew(lua_State *L) {
+	lua_pushboolean(L, true);
+	return 1;
 }
 
 static Actor *ActorDestroy(Actor *a) {
@@ -86,6 +93,11 @@ CrewStatus ActorsType(Crew *c) {
 	c->tag = "actors";
 	c->update = ActorsUpdate;
 	c->destroy = ActorsDestroy;
+
+	LuaBind("Actor",
+		"new", ActorLuaNew,
+		NULL, NULL
+	);
 
 	SDL_Renderer *renderer = WindowGetRenderer();
 

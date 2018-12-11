@@ -20,16 +20,10 @@ lua_State *LuaInit() {
 
 	luaL_openlibs(L);
 
-	bool bootstrap = LuaImport("bootstrap");
-	if (!bootstrap) {
-		lua_close(L);
-		Panic(ELUA, "cannot find bootstrap script: No such file or directory");
-	}
-
 	return L;
 }
 
-bool LuaBind(const char *key, lua_CFunction func, ...) {
+bool LuaBind(const char *table, const char *key, lua_CFunction func, ...) {
 	enum {
 		TABLE_GET = -1,
 		TABLE_SET = -2,
@@ -39,7 +33,7 @@ bool LuaBind(const char *key, lua_CFunction func, ...) {
 	va_list vl;
 	va_start(vl, func);
 	while (key && func) {
-		lua_getglobal(L, "tr");
+		lua_getglobal(L, table);
 		if (lua_isnil(L, TABLE_GET)) {
 			lua_pop(L, NIL);
 			lua_newtable(L);
@@ -48,9 +42,9 @@ bool LuaBind(const char *key, lua_CFunction func, ...) {
 		if (lua_istable(L, TABLE_GET)) {
 			lua_pushcfunction(L, func);
 			lua_setfield(L, TABLE_SET, key);
-			lua_setglobal(L, "tr");
+			lua_setglobal(L, table);
 		}
-		else Panic(ELUA, "namespace 'tr' is already set in Lua state.");
+		else Panic(ELUA, "namespace is already set in Lua state.");
 
 		key = (const char *) va_arg(vl, const char *);
 		func = va_arg(vl, void *);

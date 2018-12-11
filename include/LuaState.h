@@ -8,7 +8,7 @@
 lua_State *LuaInit();
 bool LuaImport(const char *file);
 lua_State *LuaGet();
-bool LuaBind(const char *key, lua_CFunction func, ...);
+bool LuaBind(const char *table, const char *key, lua_CFunction func, ...);
 bool LuaDestroy();
 
 #endif

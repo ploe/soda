@@ -11,11 +11,12 @@
 #include "Window.h"
 
 int main(int argc, char *argv[]) {
-	CrewNew(WindowType);
 	LuaInit();
 
+	CrewNew(WindowType);
 	CrewNew(ActorsType);
 	
+	LuaImport("bootstrap");
 	while (CrewRoll()) continue;
 
 	LuaDestroy();
