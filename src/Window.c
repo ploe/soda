@@ -2,8 +2,10 @@
 
 #include "Crew.h"
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
+//#define WINDOW_WIDTH 1920
+#define WINDOW_WIDTH 160
+//#define WINDOW_HEIGHT 1080
+#define WINDOW_HEIGHT 144
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -53,7 +55,7 @@ CrewStatus WindowType(Crew *c) {
 
 	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED );
 	SDL_SetRenderDrawColor( renderer, 0x00, 0xFF, 0x00, 0xFF );
-	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+	//SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 	SDL_SetWindowFullscreen(window, 0);
 
 	c->tag = "window";
