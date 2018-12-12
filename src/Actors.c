@@ -90,7 +90,7 @@ static Actor *ActorUpdateSDLMembers(Actor *a) {
 
 	// maps the Lua keys on to their respective C values, if the
 	// map fails the Actor won't render.
-	a->render = LuaKeysToInts(
+	a->render = LuaTableImportInts(
 		"x", &(sdl->dest.x),
 		"y", &(sdl->dest.y), 
 		"w", &(sdl->dest.w), 
@@ -104,8 +104,6 @@ static Actor *ActorUpdateSDLMembers(Actor *a) {
 
 	return a;
 }
-
-
 
 static Actor *ActorRender(Actor *a) {
 	SDL_Renderer *renderer = WindowGetRenderer();
