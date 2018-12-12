@@ -4,6 +4,7 @@
 #include <SDL_image.h>
 
 #include <lua.h>
+#include <lauxlib.h>
 
 #include "Crew.h"
 #include "LuaState.h"
@@ -17,15 +18,23 @@ static SDL_Texture *TextureNew(char *path, SDL_Renderer *renderer) {
 	return t;
 }
 
-typedef struct Actor {
-	struct Actor *next;
-	char *tag;
+typedef struct ActorSDLMembers {
 	SDL_Texture *texture;
 	SDL_Rect src, dest;
 	double angle;
 	SDL_RendererFlip flip;
-	bool render;
 	Uint8 alpha;
+} ActorSDLMembers;
+
+typedef struct ActorLuaMembers {
+	int table;
+} ActorLuaMembers;
+
+typedef struct Actor {
+	struct Actor *next;
+	bool render;
+	ActorSDLMembers sdl;
+	ActorLuaMembers lua;
 } Actor;
 
 Actor *top = NULL;
@@ -41,7 +50,21 @@ static Actor *ActorNew() {
 }
 
 static int ActorLuaNew(lua_State *L) {
-	lua_pushboolean(L, true);
+	enum {
+		TABLE = 1
+	};
+
+	if (lua_istable(L, TABLE)) {
+		Actor *a = ActorNew();
+		a->lua.table = luaL_ref(L, LUA_REGISTRYINDEX);
+		
+		SDL_Renderer *renderer = WindowGetRenderer();
+		a->sdl.texture = TextureNew("./png/george-goblin.png", renderer);
+
+		lua_pushboolean(L, true);
+	}
+	else lua_pushboolean(L, false);
+
 	return 1;
 }
 
@@ -52,18 +75,45 @@ static Actor *ActorDestroy(Actor *a) {
 	}
 
 	*current = a->next;
-	SDL_DestroyTexture(a->texture);
+	SDL_DestroyTexture(a->sdl.texture);
 	free(a);
 
 	return NULL;
 }
 
+static Actor *ActorUpdateSDLMembers(Actor *a) {
+	ActorSDLMembers *sdl = &(a->sdl);
+
+	// push the Actor's Lua table to the top of the stack
+	lua_State *L = LuaGet();
+	lua_rawgeti(L, LUA_REGISTRYINDEX, a->lua.table);
+
+	// maps the Lua keys on to their respective C values, if the
+	// map fails the Actor won't render.
+	a->render = LuaKeysToInts(
+		"x", &(sdl->dest.x),
+		"y", &(sdl->dest.y), 
+		"w", &(sdl->dest.w), 
+		"h", &(sdl->dest.h),
+		"alpha",  &(sdl->alpha),
+		NULL, NULL
+	);
+
+	// remove the table
+	lua_pop(L, 1);
+
+	return a;
+}
+
+
+
 static Actor *ActorRender(Actor *a) {
 	SDL_Renderer *renderer = WindowGetRenderer();
 	if (a->render) {
-		SDL_SetTextureBlendMode(a->texture, SDL_BLENDMODE_BLEND);
-		SDL_SetTextureAlphaMod(a->texture, a->alpha);
-		SDL_RenderCopyEx(renderer, a->texture, NULL, &(a->dest), a->angle, NULL, 0);
+		ActorSDLMembers *sdl = &(a->sdl);
+		SDL_SetTextureBlendMode(sdl->texture, SDL_BLENDMODE_BLEND);
+		SDL_SetTextureAlphaMod(sdl->texture, sdl->alpha);
+		SDL_RenderCopyEx(renderer, sdl->texture, NULL, &(sdl->dest), sdl->angle, NULL, 0);
 	}
 
 	return a;
@@ -77,13 +127,13 @@ static void ActorsForEach(ActorMethod method) {
 }
 
 static CrewStatus ActorsUpdate(Crew *c) {
+	ActorsForEach(ActorUpdateSDLMembers);
 	ActorsForEach(ActorRender);
 
 	return LIVE;
 }
 
 static CrewStatus ActorsDestroy() {
-	Actor *a;
 	ActorsForEach(ActorDestroy);
 
 	return EXIT;
@@ -100,26 +150,6 @@ CrewStatus ActorsType(Crew *c) {
 	);
 
 	SDL_Renderer *renderer = WindowGetRenderer();
-
-	Actor *a = ActorNew();
-
-	a = ActorNew();
-	a->texture = TextureNew("./png/george-goblin.png", renderer);
-	a->dest = (SDL_Rect) {0, 0, 32, 32};
-	a->render = true;
-	a->alpha = 255;
-
-	a= ActorNew();
-	a->texture = TextureNew("./png/george-goblin.png", renderer);
-	a->dest = (SDL_Rect) {64, 64, 32, 32};
-	a->render = true;
-	a->alpha = 128;
-
-	a = ActorNew();
-	ActorNew();
-	a = ActorNew();
-
-	ActorDestroy(a);
 
 	return LIVE;
 }

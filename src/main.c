@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	CrewNew(WindowType);
 	CrewNew(ActorsType);
 	
-	LuaImport("bootstrap");
+	LuaImport("bootstrap.lua");
 	while (CrewRoll()) continue;
 
 	LuaDestroy();
