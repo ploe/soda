@@ -8,6 +8,7 @@
 
 #include "Crew.h"
 #include "LuaState.h"
+#include "Panic.h"
 #include "Window.h"
 
 static SDL_Texture *TextureNew(char *path, SDL_Renderer *renderer) {
@@ -57,13 +58,12 @@ static int ActorLuaNew(lua_State *L) {
 	if (lua_istable(L, TABLE)) {
 		Actor *a = ActorNew();
 		a->lua.table = luaL_ref(L, LUA_REGISTRYINDEX);
+		lua_rawgeti(L, LUA_REGISTRYINDEX, a->lua.table);
 		
 		SDL_Renderer *renderer = WindowGetRenderer();
 		a->sdl.texture = TextureNew("./png/george-goblin.png", renderer);
-
-		lua_pushboolean(L, true);
 	}
-	else lua_pushboolean(L, false);
+	else lua_pushnil(L);
 
 	return 1;
 }
@@ -105,6 +105,33 @@ static Actor *ActorUpdateSDLMembers(Actor *a) {
 	return a;
 }
 
+static Actor *ActorLuaMethod(Actor *a, const char *method) {
+	enum {
+		TOP = -1,
+		ACTOR = -2
+	};
+
+	lua_State *L = LuaGet();
+	lua_rawgeti(L, LUA_REGISTRYINDEX, a->lua.table);
+
+	lua_getfield(L, TOP, method);
+	if (lua_isfunction(L, TOP)) {
+		lua_rawgeti(L, LUA_REGISTRYINDEX, a->lua.table);
+
+		if (lua_pcall(L, 1, 1, 0)) Panic(-1, lua_tostring(L, TOP));
+
+		lua_setfield(L, ACTOR, method);
+	}
+
+	lua_pop(L, 1);
+
+	return a;
+}
+
+static Actor *ActorUpdate(Actor *a) {
+	return ActorLuaMethod(a, "update");
+}
+
 static Actor *ActorRender(Actor *a) {
 	SDL_Renderer *renderer = WindowGetRenderer();
 	if (a->render) {
@@ -125,8 +152,17 @@ static void ActorsForEach(ActorMethod method) {
 }
 
 static CrewStatus ActorsUpdate(Crew *c) {
-	ActorsForEach(ActorUpdateSDLMembers);
-	ActorsForEach(ActorRender);
+	ActorMethod methods[] = {
+		ActorUpdate,
+		ActorUpdateSDLMembers,
+		ActorRender,
+		NULL
+	};
+
+	ActorMethod *m;
+	for (m = methods; *m != NULL; m++) {
+		ActorsForEach(*m);
+	}
 
 	return LIVE;
 }

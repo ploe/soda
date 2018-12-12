@@ -3,4 +3,4 @@ SDL_FLAGS := `pkg-config sdl2 SDL2_image --cflags --libs`
 LUA_FLAGS := `pkg-config lua5.3 --cflags --libs`
 
 app: ./src/main.c ./src/Actors.c ./src/Crew.c ./src/Panic.c ./src/LuaState.c ./src/Text.c ./src/Window.c
-	$(compile) $^ -o $@ $(SDL_FLAGS) $(LUA_FLAGS) 
+	$(compile) $^ -o $@ $(SDL_FLAGS) $(LUA_FLAGS)
