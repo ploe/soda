@@ -10,18 +10,27 @@
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
+#define WINDOW_FPS 60
+#define WINDOW_TICKS (1000 / WINDOW_FPS)
+
 /*	Method that renders the Window and checks to see if the 
 	player has clicked the QUIT button. If so, we tear down the 
 	app.	*/
 static CrewStatus WindowUpdate(Crew *c) {
-	SDL_RenderPresent( renderer );
+	static Uint32 start = WINDOW_TICKS;
+
+	Uint32 elapsed = SDL_GetTicks() - start;
+	if (elapsed < WINDOW_TICKS) SDL_Delay(WINDOW_TICKS-elapsed);
+
+	SDL_RenderPresent(renderer);
+	SDL_RenderClear(renderer);
+
+	start = SDL_GetTicks();
 
 	SDL_Event e;
     	while (SDL_PollEvent(&e)) {
         	if (e.type == SDL_QUIT) return EXIT;
 	}
-
-	SDL_RenderClear( renderer );
 
 	return LIVE;
 }
