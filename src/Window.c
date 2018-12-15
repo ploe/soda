@@ -10,6 +10,8 @@
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
+const char *platform = NULL;
+
 #define WINDOW_FPS 60
 #define WINDOW_TICKS (1000 / WINDOW_FPS)
 
@@ -17,7 +19,7 @@ SDL_Renderer *renderer = NULL;
 	player has clicked the QUIT button. If so, we tear down the 
 	app.	*/
 static CrewStatus WindowUpdate(Crew *c) {
-	static Uint32 start = WINDOW_TICKS;
+	static Uint32 start = 0;
 
 	Uint32 elapsed = SDL_GetTicks() - start;
 	if (elapsed < WINDOW_TICKS) SDL_Delay(WINDOW_TICKS-elapsed);
@@ -52,6 +54,8 @@ CrewStatus WindowType(Crew *c) {
 		puts("failed to create window");
 		return EXIT;
 	}
+
+	platform = SDL_GetPlatform();
 
         window = SDL_CreateWindow(
 		"hi helo",

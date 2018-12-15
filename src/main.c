@@ -7,15 +7,24 @@
 
 #include "Actors.h"
 #include "Crew.h"
+#include "Joystick.h"
 #include "LuaState.h"
 #include "Window.h"
 
 int main(int argc, char *argv[]) {
 	LuaInit();
 
-	CrewNew(WindowType);
-	CrewNew(ActorsType);
-	
+	CrewMethod *c, crew[] = { 
+		WindowType, 
+		JoystickType, 
+		ActorsType, 
+		NULL 
+	};
+
+	for (c = crew; *c != NULL; c++) {
+		CrewNew(*c);
+	}
+
 	LuaImport("bootstrap.lua");
 	while (CrewRoll()) continue;
 
