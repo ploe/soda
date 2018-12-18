@@ -32,6 +32,8 @@ static CrewStatus WindowUpdate(Crew *c) {
 	SDL_Event e;
     	while (SDL_PollEvent(&e)) {
         	if (e.type == SDL_QUIT) return EXIT;
+		if (e.type == SDL_JOYDEVICEADDED) puts("controller added");
+		if (e.type == SDL_JOYDEVICEREMOVED) puts("controller removed");
 	}
 
 	return LIVE;
