@@ -7,7 +7,7 @@
 
 #include "Actors.h"
 #include "Crew.h"
-#include "Joystick.h"
+// #include "Joystick.h"
 #include "LuaState.h"
 #include "Window.h"
 
@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 
 	CrewMethod *c, crew[] = { 
 		WindowType, 
-		JoystickType, 
+//		JoystickType, 
 		ActorsType, 
 		NULL 
 	};

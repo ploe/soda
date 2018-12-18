@@ -6,20 +6,17 @@
 #include "Text.h"
 
 typedef struct Pair {
-	struct Pair *next;
 	Text key;
 	void *value;
 } Pair;
 
-typedef struct Bucket {
-	Pair *top;
-} Bucket;
-
 typedef struct Map {
-	Bucket *buckets;
+	Pair *pairs;
 	double load;
 	unsigned long mask;
 } Map;
+
+typedef bool (*MapMethod)(Map *m, char *key, void *value, void *probe);
 
 #define MAP_DEFAULT_MASK 0x0F
 
@@ -29,5 +26,10 @@ Map *MapNewWithMask(unsigned long mask);
 bool MapSet(Map *m, char *key, void *value);
 void *MapGet(Map *m, char *key);
 void MapRemove(Map *m, char *key);
+
+bool MapProbeEach(Map *m, MapMethod method, void *probe);
+#define MapForEach(m, method) MapProbeEach(m, method, NULL)
+
+unsigned long MapSize(Map *m);
 
 #endif

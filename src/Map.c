@@ -5,9 +5,9 @@
 #include "Map.h"
 #include "Text.h"
 
-static unsigned long djb2(const char *str) {
-	unsigned long hash = 5381;
+typedef unsigned long Hash;
 
+static Hash djb2WithHash(Hash hash, const char *str) {
 	int c;
 	while (c = *str++) {
 		hash = ((hash << 5) + hash) + c;
@@ -16,14 +16,36 @@ static unsigned long djb2(const char *str) {
 	return hash;
 }
 
+#define DJB2_DEFAULT_HASH 5381
+
+#define djb2(str) djb2WithHash(DJB2_DEFAULT_HASH, str)
+
 #define MAP_DEFAULT_MASK 0x0F
 
-Map *MapNewWithMask(unsigned long mask) {
+static Hash PairIndex(Hash hash, Hash mask) {
+	return hash & mask;
+}
+
+static Pair *PairFindAddress(Map *m, char *key) {
+	Hash hash = DJB2_DEFAULT_HASH;
+	Pair *p;
+
+	do {
+		hash = djb2WithHash(hash, key);
+		Hash index = PairIndex(hash, m->mask);
+		p = &(m->pairs[index]);
+	} while ((p->key) && (strcmp(p->key, key) != 0));
+
+	return p;
+}
+
+Map *MapNewWithMask(Hash mask) {
 	Map *m = calloc(1, sizeof(Map));
 	if (m) {
+		m->load = 0.75;
 		m->mask = mask;
-		m->buckets = calloc(mask + 1, sizeof(Bucket));
-		if (!m->buckets) {
+		m->pairs = calloc(mask + 1, sizeof(Pair));
+		if (!m->pairs) {
 			free(m);
 			return NULL;
 		}
@@ -32,84 +54,71 @@ Map *MapNewWithMask(unsigned long mask) {
 	return m;
 }
 
-static unsigned long BucketIndex(unsigned long hash, unsigned long mask) {
-	return hash & mask;
+
+static bool MapCopy(Map *m, char *key, void *value, void *new) {
+	return MapSet((Map *) new, key, value);
 }
 
-static Pair **BucketTopAddress(Map *m, char *key) {
-	unsigned long hash, index;
-	hash = djb2(key);
+static Map *MapRehash(Map *old, Hash mask) {
+	Map *new = MapNewWithMask(mask);
+	if (!new) return old;
 
-	index = BucketIndex(hash, m->mask);
-	return &(m->buckets[index].top);
+	free(old);
+	if (!MapProbeEach(old, MapCopy, new)) return NULL;
+	
+	return new;
 }
 
-static Pair *BucketTop(Map *m, char *key) {
-	return *BucketTopAddress(m, key);
-}
-
-static Pair *PairFind(Map *m, char *key) {
-	Pair *p;
-	for (p = BucketTop(m, key); p != NULL; p = p->next) {
-		if ((strcmp(p->key, key) == 0)) break;
-	}
-
-	return p;
-}
-
-static void PairFree(Pair *p) {
-	TextFree(p->key);
-	free(p);
-}
-
-static Pair *PairNew(Map *m, char *key) {
-	Pair *p = calloc(1, sizeof(Pair));
-	if (p) {
-		p->key = TextNew(key);
-		if (!p->key) {
-			free(p);
-			return NULL;
-		}
-
-		Pair **top = BucketTopAddress(m, key);
-		p->next = *top;
-		*top = p;
-	}
-
-	return p;
+Map *MapGrow(Map *m) {
+	Hash mask = m->mask;
+	mask <<= 1;
+	mask += 1;
+	return MapRehash(m, mask);
 }
 
 bool MapSet(Map *m, char *key, void *value) {
-	Pair *p = PairFind(m, key);
-	if (!p) p = PairNew(m, key);
-	if (p) {
-		p->value = value;	
-		return true;
-	}
+	Pair *p = PairFindAddress(m, key);
+	if (!p->key) p->key = TextNew(key);
 
-	return false;
+	p->value = value;
+
 }
 
 void *MapGet(Map *m, char *key) {
-	Pair *p = PairFind(m, key);
-
-	if (p) return p->value;
-
-	return NULL;
+	Pair *p = PairFindAddress(m, key);
+	return p->value;
 }
 
 void MapRemove(Map *m, char *key) {
-	Pair *p = PairFind(m, key);
-	if (p) {
-		Pair **current = BucketTopAddress(m, key);
+	Pair *p = PairFindAddress(m, key);
+	
+	if (p->key) p->key = TextFree(p->key);
+	p->value = NULL;
+}
 
-		while ((*current != p) && (*current != NULL)) {
-			current = &(*current)->next;
-		}
+bool MapProbeEach(Map *m, MapMethod method, void *probe) {
+	Hash i;
+	bool again;
+	for (i = 0; i <= m->mask; i++) {
+		Pair *p = &(m->pairs[i]);
+		again = method(m, p->key, p->value, probe);
 
-		if (*current) {
-			*current = p->next;
-			PairFree(p);
-		}
+		if (!again) break;
 	}
+
+	return again;
+}
+
+static bool MapCountElems(Map *m, char *key, void *value, void *probe) {
+	int *elems = (int *) probe;
+	if (key) (*elems)++;
+
+	return true;
+}
+
+unsigned long MapSize(Map *m) {
+	unsigned long elems = 0;
+	MapProbeEach(m, MapCountElems, &elems);
+
+	return elems;
 }
