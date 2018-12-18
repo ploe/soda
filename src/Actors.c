@@ -74,9 +74,11 @@ static Actor *ActorDestroy(Actor *a) {
 		current = &(*current)->next;
 	}
 
-	*current = a->next;
-	SDL_DestroyTexture(a->sdl.texture);
-	free(a);
+	if (*current) {
+		*current = a->next;
+		SDL_DestroyTexture(a->sdl.texture);
+		free(a);
+	}
 
 	return NULL;
 }
