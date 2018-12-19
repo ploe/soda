@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,7 +10,7 @@ typedef unsigned long Hash;
 
 static Hash djb2WithHash(Hash hash, const char *str) {
 	int c;
-	while (c = *str++) {
+	while ( (c = *str++) ) {
 		hash = ((hash << 5) + hash) + c;
 	}
 
@@ -22,18 +23,32 @@ static Hash djb2WithHash(Hash hash, const char *str) {
 
 #define MAP_DEFAULT_MASK 0x0F
 
+double MapGetCurrentLoad(Map *m) {
+	return MapSize(m) / m->mask;
+}
+
+bool MapIsOverLoaded(Map *m) {
+	return (MapGetCurrentLoad(m) >= m->load);	
+}
+
 static Hash PairIndex(Hash hash, Hash mask) {
 	return hash & mask;
 }
 
 static Pair *PairFindAddress(Map *m, char *key) {
-	Hash hash = DJB2_DEFAULT_HASH;
-	Pair *p;
+	Hash hash = DJB2_DEFAULT_HASH, collisions = 0;
 
+	Pair *p;
 	do {
+		// if the key can't be found within the load limit,
+		// we break out, this we can MapGrow
+		double load = (double) collisions / (double) m->mask;
+		if (load >= m->load) return NULL;
+
 		hash = djb2WithHash(hash, key);
 		Hash index = PairIndex(hash, m->mask);
 		p = &(m->pairs[index]);
+		collisions++;
 	} while ((p->key) && (strcmp(p->key, key) != 0));
 
 	return p;
@@ -54,19 +69,30 @@ Map *MapNewWithMask(Hash mask) {
 	return m;
 }
 
+Map *MapFree(Map *m) {
+	free(m->pairs);
+	free(m);
+	return NULL;
+}
 
 static bool MapCopy(Map *m, char *key, void *value, void *new) {
 	return MapSet((Map *) new, key, value);
 }
 
+#define GROW(mask) ((mask << 1) + 1)
+
 static Map *MapRehash(Map *old, Hash mask) {
 	Map *new = MapNewWithMask(mask);
-	if (!new) return old;
 
-	free(old);
-	if (!MapProbeEach(old, MapCopy, new)) return NULL;
+	// just grow the hash till all the elems fit in
+	if (new && MapProbeEach(old, MapCopy, new) == false) {
+		MapFree(old);
+		return new;
+	}
+
+	if (new) MapFree(new);
+	return old;
 	
-	return new;
 }
 
 Map *MapGrow(Map *m) {
@@ -78,10 +104,14 @@ Map *MapGrow(Map *m) {
 
 bool MapSet(Map *m, char *key, void *value) {
 	Pair *p = PairFindAddress(m, key);
-	if (!p->key) p->key = TextNew(key);
+	if (p) {
+		if (!p->key) p->key = TextNew(key);
+		p->value = value;
+		
+		return true;
+	}
 
-	p->value = value;
-
+	return false;
 }
 
 void *MapGet(Map *m, char *key) {

@@ -1,9 +1,12 @@
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "Map.h"
 
 bool PrintPairs(Map *m, char *key, void *value, void *probe) {
 	printf("'%s' => '%s'\n", key, (char *) value);
+
+	return true;
 }
 
 int main(int argc, char *argv[]) {
@@ -13,6 +16,7 @@ int main(int argc, char *argv[]) {
 	MapSet(m, "age", "2... oh wait");
 	MapSet(m, "age", "hi helo");
 	MapSet(m, "hobbies", "game boy and ladies");
+	//MapRemove(m, "hobbies");
 	MapSet(m, "a", "hi helo");
 	MapSet(m, "b", "hi helo");
 	MapSet(m, "c", "hi helo");
@@ -24,12 +28,11 @@ int main(int argc, char *argv[]) {
 	MapSet(m, "i", "hi helo");
 	MapSet(m, "j", "hi helo");
 	MapSet(m, "k", "hi helo");
-//	MapSet(m, "l", "hi helo");
-//	MapSet(m, "m", "hi helo");
-//	MapSet(m, "noon", "hi helo");
-//	MapSet(m, "o", "hi helo");
-//	MapSet(m, "p", "hi helo");
-	MapRemove(m, "hobbies");
+	MapSet(m, "l", "hi helo");
+	MapSet(m, "m", "hi helo");
+	MapSet(m, "noon", "hi helo");
+	MapSet(m, "o", "hi helo");
+	MapSet(m, "p", "hi helo");
 //	MapSet(m, "hobbies", "being dull");
 
 	MapForEach(m, PrintPairs);

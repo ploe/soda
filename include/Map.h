@@ -30,6 +30,7 @@ void MapRemove(Map *m, char *key);
 bool MapProbeEach(Map *m, MapMethod method, void *probe);
 #define MapForEach(m, method) MapProbeEach(m, method, NULL)
 
+Map *MapGrow(Map *m);
 unsigned long MapSize(Map *m);
 
 #endif
