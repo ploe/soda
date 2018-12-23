@@ -13,10 +13,9 @@ a = Actor.new {
 
 function a:up()
 	self.alpha = self.alpha + 128
-	if (Joysticks) then
-		for k, v in pairs(Joysticks) do
-			--print(k)
-			--if Joysticks[1]['buttons'][k] then print(k .. ": " .. tostring(v)) end
+	if (Joysticks[1]) then
+		for k, v in ipairs(Joysticks[1]['buttons']) do
+			if Joysticks[1]['buttons'][k] then print(k .. ": " .. tostring(v)) end
 		end
 	end
 	return a.down
