@@ -24,9 +24,6 @@ static Joystick *top = NULL;
 
 Joystick *JoystickAttach() {
 	Joystick *j;
-	for (j = top; j != NULL; j = j->next) {
-		
-	}
 }
 
 /*	Method that assumes a Joystick table is pushed to the stack	*/
