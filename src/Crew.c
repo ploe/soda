@@ -24,7 +24,21 @@ Crew *CrewNew(CrewMethod type) {
 	return c;
 }
 
-CrewStatus CrewInit(CrewMethod type, ...) {
+Crew *CrewDestroy(Crew *c) {
+	Crew **current = &top;
+	while ((*current != c) && (*current != NULL)) {
+		current = &(*current)->next;
+	}
+
+	if (*current) {
+		*current = c->next;
+		if (c->destroy) c->destroy(c);
+	}
+
+	return NULL;
+}
+
+bool CrewInit(CrewMethod type, ...) {
 	va_list vl;
 
 	va_start(vl, type);
@@ -38,6 +52,7 @@ CrewStatus CrewInit(CrewMethod type, ...) {
 
 	return true;
 }
+
 
 /*	Method that runs the update method for each Crew member, but
 	only if it's LIVE.
@@ -54,4 +69,9 @@ bool CrewRoll() {
 	}
 
 	return true;
+}
+
+void CrewPurge() {
+	Crew *c;
+	for (c = top; c != NULL; c = c->next) CrewDestroy(c);
 }

@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 	LuaImport("bootstrap.lua");
 	while (CrewRoll()) continue;
 
+	CrewPurge();
 	LuaDestroy();
 
 	return 0;

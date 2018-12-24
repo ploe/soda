@@ -32,5 +32,6 @@ typedef struct Crew {
 Crew *CrewNew(CrewMethod type);
 bool CrewInit(CrewMethod type, ...);
 bool CrewRoll();
+void CrewPurge();
 
 #endif
