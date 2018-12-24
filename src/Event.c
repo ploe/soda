@@ -22,7 +22,7 @@ CrewStatus EventUpdate(Crew *c) {
 
 
 
-CrewStatus EventType(Crew *c) {
+CrewStatus EventInit(Crew *c) {
 	c->update = EventUpdate;
 
 	return LIVE;

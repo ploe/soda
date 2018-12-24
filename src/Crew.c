@@ -1,3 +1,5 @@
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "Crew.h"
@@ -20,6 +22,21 @@ Crew *CrewNew(CrewMethod type) {
 	}
 
 	return c;
+}
+
+CrewStatus CrewInit(CrewMethod type, ...) {
+	va_list vl;
+
+	va_start(vl, type);
+	while (type) {
+		Crew *c = CrewNew(type);
+		if (!c) return false;
+
+		type = (CrewMethod) va_arg(vl, void *);
+	}
+	va_end(vl);
+
+	return true;
 }
 
 /*	Method that runs the update method for each Crew member, but
