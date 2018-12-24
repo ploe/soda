@@ -1,5 +1,10 @@
 #include <stdlib.h>
+
 #include "Crew.h"
+
+/*	Linked list of all the Crew members. They represent different
+	components within the engine. */
+static Crew *top = NULL;
 
 /*	Method for creating a new Crew member.	*/
 Crew *CrewNew(CrewMethod type) {
