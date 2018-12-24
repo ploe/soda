@@ -44,7 +44,7 @@ static CrewStatus WindowDestroy(Crew *c) {
 }
 
 /*	Method that initialises the Window Crew member.	*/
-CrewStatus WindowType(Crew *c) {
+CrewStatus WindowInit(Crew *c) {
 	if (SDL_Init(SDL_INIT_VIDEO)) {
 		puts("failed to create window");
 		return EXIT;

@@ -30,6 +30,8 @@ typedef struct Crew {
 
 /*	Methods for the Crew module	*/
 Crew *CrewNew(CrewMethod type);
+bool CrewInit(CrewMethod type, ...);
 bool CrewRoll();
+void CrewPurge();
 
 #endif

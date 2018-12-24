@@ -8,11 +8,6 @@
 
 #define JOYSTICKS_LUA_MODULE "Joysticks"
 
-void LuaType(lua_State* L, int index) {
-	int tp = lua_type(L, index);
-	puts(lua_typename(L, tp));
-}
-
 typedef struct Joystick {
 	struct Joystick *next;
 	int index;
@@ -76,7 +71,7 @@ CrewStatus JoystickUpdate(Crew *c) {
 	return LIVE;
 }
 
-CrewStatus JoystickType(Crew *c) {
+CrewStatus JoystickInit(Crew *c) {
 	c->tag = "joystick";
 	c->update = JoystickUpdate;
 

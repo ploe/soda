@@ -3,6 +3,6 @@
 
 #include "Crew.h"
 
-CrewStatus ActorsType(Crew *c);
+CrewStatus ActorsInit(Crew *c);
 
 #endif

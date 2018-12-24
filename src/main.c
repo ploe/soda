@@ -15,20 +15,18 @@
 int main(int argc, char *argv[]) {
 	LuaInit();
 
-	CrewMethod *c, crew[] = { 
-		WindowType,
-		ActorsType, 
-		JoystickType, 
-		EventType 
-	};
-
-	for (c = crew; *c != NULL; c++) {
-		CrewNew(*c);
-	}
+	CrewInit(
+		WindowInit,
+		ActorsInit,
+		JoystickInit,
+		EventInit,
+		NULL
+	);
 
 	LuaImport("bootstrap.lua");
 	while (CrewRoll()) continue;
 
+	CrewPurge();
 	LuaDestroy();
 
 	return 0;

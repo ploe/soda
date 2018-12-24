@@ -175,7 +175,7 @@ static CrewStatus ActorsDestroy() {
 	return EXIT;
 }
 
-CrewStatus ActorsType(Crew *c) {
+CrewStatus ActorsInit(Crew *c) {
 	c->tag = "actors";
 	c->update = ActorsUpdate;
 	c->destroy = ActorsDestroy;
