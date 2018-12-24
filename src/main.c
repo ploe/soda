@@ -7,7 +7,8 @@
 
 #include "Actors.h"
 #include "Crew.h"
-// #include "Joystick.h"
+#include "Event.h"
+#include "Joystick.h"
 #include "LuaState.h"
 #include "Window.h"
 
@@ -15,8 +16,9 @@ int main(int argc, char *argv[]) {
 	LuaInit();
 
 	CrewMethod *c, crew[] = { 
-		WindowType, 
-//		JoystickType, 
+		WindowType,
+		EventType,
+		JoystickType, 
 		ActorsType, 
 		NULL 
 	};

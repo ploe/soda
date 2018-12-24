@@ -2,10 +2,10 @@
 
 #include "Crew.h"
 
-#define WINDOW_WIDTH 1920
-//#define WINDOW_WIDTH 160
-#define WINDOW_HEIGHT 1080
-//#define WINDOW_HEIGHT 144
+//#define WINDOW_WIDTH 1920
+#define WINDOW_WIDTH 160
+//#define WINDOW_HEIGHT 1080
+#define WINDOW_HEIGHT 144
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -28,11 +28,6 @@ static CrewStatus WindowUpdate(Crew *c) {
 	SDL_RenderClear(renderer);
 
 	start = SDL_GetTicks();
-
-	SDL_Event e;
-    	while (SDL_PollEvent(&e)) {
-        	if (e.type == SDL_QUIT) return EXIT;
-	}
 
 	return LIVE;
 }
