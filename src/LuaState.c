@@ -117,6 +117,61 @@ lua_State *LuaGet() {
 	return L;
 }
 
+void LuaFetchNestedTableByIndex(lua_State *L, int index, int n) {
+	if (!lua_istable(L, index)) Panic(-1, "index is not a table");
+
+	enum { 
+		TOP = -1 
+	};
+
+	// get the nested table
+	lua_rawgeti(L, index, n);
+	if (!lua_istable(L, TOP)) {
+		// throw the old value away
+		lua_pop(L, 1);
+
+		// create the new one and link it to our parent table
+		lua_newtable(L);
+		if (index < 0) index--;
+		lua_rawseti(L, index, n);
+
+		// then we get the reference to the table we just set
+		if (index < 0) index++;
+		lua_rawgeti(L, index, n);
+	}
+}
+
+void LuaFetchNestedTableByKey(lua_State *L, int index, const char *key) {
+	if (!lua_istable(L, index)) Panic(-1, "index is not a table");
+
+	enum {
+		TOP = -1,
+	};
+
+	// get the table by key
+	lua_pushstring(L, key);
+	if (index < 0) index--;
+	lua_rawget(L, index);
+
+	if (!lua_istable(L, TOP)) {
+		// throw away the old value
+		lua_pop(L, 1);
+
+		// create new table and link it in the parent table with key
+		lua_pushstring(L, key);
+		lua_newtable(L);
+		if (index < 0) index--;
+		lua_rawset(L, index);
+
+		// then get the reference to the new table
+		lua_pushstring(L, key);
+		if (index < 0) index++;
+		lua_rawget(L, index);
+	}
+}
+
+
+
 bool LuaDestroy() {
 	if (L) {
 		lua_close(L);
