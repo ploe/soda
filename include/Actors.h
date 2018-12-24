@@ -1,5 +1,5 @@
-#ifndef TR_ACTORS
-#define TR_ACTORS
+#ifndef SODA_ACTORS_H
+#define SODA_ACTORS_H
 
 #include "Crew.h"
 

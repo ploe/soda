@@ -1,5 +1,5 @@
-#ifndef TR_TEXT
-#define TR_TEXT
+#ifndef SODA_TEXT_H
+#define SODA_TEXT_H
 
 typedef char *Text;
 

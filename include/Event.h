@@ -1,5 +1,5 @@
-#ifndef TR_EVENT
-#define TR_EVENT
+#ifndef SODA_EVENT_H
+#define SODA_EVENT_H
 
 CrewStatus EventType(Crew *c);
 

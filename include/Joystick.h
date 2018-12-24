@@ -1,5 +1,5 @@
-#ifndef TR_JOYSTICK
-#define TR_JOYSTICK
+#ifndef SODA_JOYSTICK_H
+#define SODA_JOYSTICK_H
 
 CrewStatus JoystickType(Crew *c);
 

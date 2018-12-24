@@ -12,7 +12,7 @@ CrewStatus EventUpdate(Crew *c) {
 				break;
 			case SDL_JOYDEVICEADDED:
 				break;
-			case SDL_JOYDEVICEREMOVE:
+			case SDL_JOYDEVICEREMOVED:
 				break;
 		}
 	}

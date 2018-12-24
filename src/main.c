@@ -17,10 +17,9 @@ int main(int argc, char *argv[]) {
 
 	CrewMethod *c, crew[] = { 
 		WindowType,
-		EventType,
-		JoystickType, 
 		ActorsType, 
-		NULL 
+		JoystickType, 
+		EventType 
 	};
 
 	for (c = crew; *c != NULL; c++) {

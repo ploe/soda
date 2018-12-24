@@ -1,5 +1,5 @@
-#ifndef TR_MAP
-#define TR_MAP
+#ifndef SODA_MAP_H
+#define SODA_MAP_H
 
 #include <stdbool.h>
 

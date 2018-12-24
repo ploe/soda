@@ -1,5 +1,5 @@
-#ifndef TR_WINDOW
-#define TR_WINDOW
+#ifndef SODA_WINDOW_H
+#define SODA_WINDOW_H
 
 #include <SDL.h>
 

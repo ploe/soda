@@ -1,5 +1,5 @@
-#ifndef TR_LUA
-#define TR_LUA
+#ifndef SODA_LUA_H
+#define SODA_LUA_H
 
 #include <stdbool.h>
 

@@ -15,15 +15,18 @@ void LuaType(lua_State* L, int index) {
 
 typedef struct Joystick {
 	struct Joystick *next;
-	char *guid;
+	int index;
 	bool on;
 	SDL_Joystick *joy;
 } Joystick;
 
 static Joystick *top = NULL;
 
-Joystick *JoystickAttach() {
+Joystick *JoystickAttach(int index) {
 	Joystick *j;
+	for (j = top; j != NULL; j = j->next) {
+	}
+	return j;
 }
 
 /*	Method that assumes a Joystick table is pushed to the stack	*/
@@ -58,8 +61,8 @@ CrewStatus JoystickUpdate(Crew *c) {
 	// push Joysticks table to stack
 	lua_getglobal(L, JOYSTICKS_LUA_MODULE);
 	int i = 0;
+	SDL_Joystick *joy = SDL_JoystickOpen(i);
 	for (i = 0; i < SDL_NumJoysticks(); i++) {
-		SDL_Joystick *joy = SDL_JoystickOpen(i);
 		if (joy) {
 			// lua indices start from 1
 			int n = i + 1;
