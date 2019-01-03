@@ -103,8 +103,8 @@ bool LuaTableImport(LuaTableImporter import, void *key, void *dest, ...) {
 }
 
 
-bool LuaImport(const char *file) {
-	if (luaL_loadfile(L, file) || lua_pcall(L, 0, 0, 0)) {
+bool LuaImportWithStack(const char *file, int nargs, int nresults) {
+	if (luaL_loadfile(L, file) || lua_pcall(L, nargs, nresults, 0)) {
 		fprintf(stderr, "%s\n", lua_tostring(L, -1));
 		lua_pop(L, 1);
 		return false;
@@ -169,8 +169,6 @@ void LuaFetchNestedTableByKey(lua_State *L, int index, const char *key) {
 		lua_rawget(L, index);
 	}
 }
-
-
 
 bool LuaDestroy() {
 	if (L) {
