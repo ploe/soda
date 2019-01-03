@@ -15,6 +15,16 @@
 
 #define ARGS_FIRST_CHAR(i) (argv[i][0])
 #define ARGS_FLAGS_START(i) &(argv[i][1])
+#define REQUIRES_VALUE(arg) (arg[1] == ':')
+
+char *ArgsAccept(char f, char *accepted) {
+	while (*accepted != '\0') {
+		if (f == *accepted) return accepted;
+		accepted++;
+	}
+
+	return NULL;
+}
 
 void ArgsParse(char *accepted, int argc, char *argv[]) {
 	int i;
@@ -24,10 +34,17 @@ void ArgsParse(char *accepted, int argc, char *argv[]) {
 
 		char *f;
 		for (f = ARGS_FLAGS_START(i); *f != '\0'; f++) {
-			printf("flag %c input\n", *f);
+			char *arg;
+			if ( (arg = ArgsAccept(*f, accepted)) ) {
+				printf("flag -%c input\n", *f);
+				if (REQUIRES_VALUE(arg)) {
+					puts("this one requires a value...");
+				}
+			}
 		}
 	}
 }
+
 
 int main(int argc, char *argv[]) {
 	LuaInit();
