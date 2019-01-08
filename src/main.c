@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <lua.h>
 
@@ -22,6 +23,8 @@ int main(int argc, char *argv[]) {
 		EventInit,
 		NULL
 	);
+
+	ArgsParse("hi:elo", argc, argv);
 
 	LuaImport("bootstrap.lua");
 	while (CrewRoll()) continue;
