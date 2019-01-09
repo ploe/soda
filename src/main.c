@@ -17,14 +17,12 @@ int main(int argc, char *argv[]) {
 	LuaInit();
 
 	CrewInit(
-		WindowInit,
+		WindowGLInit,
 		ActorsInit,
 		JoystickInit,
 		EventInit,
 		NULL
 	);
-
-	ArgsParse("hi:elo", argc, argv);
 
 	LuaImport("bootstrap.lua");
 	while (CrewRoll()) continue;

@@ -1,6 +1,11 @@
 #include <SDL.h>
 
+#define GLEW_STATIC
+#include <GL/glew.h>
+
 #include "Crew.h"
+#include "Text.h"
+#include "Panic.h"
 
 //#define WINDOW_WIDTH 1920
 #define WINDOW_WIDTH 160
@@ -9,6 +14,7 @@
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+SDL_GLContext context;
 
 const char *platform = NULL;
 
@@ -53,7 +59,7 @@ CrewStatus WindowInit(Crew *c) {
 	platform = SDL_GetPlatform();
 
         window = SDL_CreateWindow(
-		"hi helo",
+		"soda: SDL",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		WINDOW_WIDTH,
@@ -75,4 +81,111 @@ CrewStatus WindowInit(Crew *c) {
 
 SDL_Renderer *WindowGetRenderer() {
 	return renderer;
+}
+
+CrewStatus WindowGLUpdate(Crew *c) {
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	SDL_GL_SwapWindow(window);
+	
+	return LIVE;
+}
+
+CrewStatus SDL_WindowGLDestroy(Crew *c) {
+	SDL_GL_DeleteContext(context);  
+	return CUT;
+}
+
+
+GLuint ShaderLoad(char *path, GLenum type);
+
+CrewStatus WindowGLInit(Crew *c) {
+	c->update =  WindowGLUpdate;
+
+	if (SDL_Init(SDL_INIT_VIDEO)) {
+		puts("failed to create window");
+		return EXIT;
+	}
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+        window = SDL_CreateWindow(
+		"soda: OpenGL",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WINDOW_WIDTH,
+		WINDOW_HEIGHT, 
+		SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
+	);
+
+	context = SDL_GL_CreateContext(window);
+	if (!context) Panic(-1, "EGL");
+
+	glewExperimental = GL_TRUE;
+	glewInit();
+
+	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+	SDL_SetWindowFullscreen(window, 0);
+
+	glClearColor(0.f, 1.f, 0.f, 1.f);
+
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	float vertices[] = {
+		0.0f,  1.0f, // Vertex 1 (X, Y)
+     		-1.0f, -1.0f, // Vertex 2 (X, Y)
+    		1.0f, -1.0f  // Vertex 3 (X, Y)
+	};
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+
+	GLuint program = glCreateProgram();
+
+	GLuint vert = ShaderLoad("./shaders/default.vert", GL_VERTEX_SHADER);
+	glAttachShader(program, vert);
+
+	GLuint frag = ShaderLoad("./shaders/default.frag", GL_FRAGMENT_SHADER);
+	glAttachShader(program, frag);
+
+	glBindFragDataLocation(program, 0, "outColor");
+	glLinkProgram(program);
+
+	glUseProgram(program);
+
+	GLint position = glGetAttribLocation(program, "position");
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(position);
+
+	return LIVE;
+}
+
+GLuint ShaderLoad(char *path, GLenum type) {
+	Text src = TextFromFile(path);
+
+	GLuint shader = glCreateShader(type);
+	glShaderSource(shader, 1, (const GLchar **) &src, NULL);
+	glCompileShader(shader);
+
+	GLint status;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+
+	if (!status) {
+		const GLuint len = 1024;
+		char msg[len];
+		glGetShaderInfoLog(shader, len, NULL, msg);
+		Panic(-1, msg);
+	}
+
+	src = TextFree(src);
+	return shader;
 }

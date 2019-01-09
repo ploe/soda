@@ -6,5 +6,6 @@
 SDL_Renderer *WindowGetRenderer();
 
 CrewStatus WindowInit(Crew *c);
+CrewStatus WindowGLInit(Crew *c);
 
 #endif
