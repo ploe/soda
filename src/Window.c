@@ -7,10 +7,10 @@
 #include "Text.h"
 #include "Panic.h"
 
-//#define WINDOW_WIDTH 1920
-#define WINDOW_WIDTH 160
-//#define WINDOW_HEIGHT 1080
-#define WINDOW_HEIGHT 144
+#define WINDOW_WIDTH 1920
+//#define WINDOW_WIDTH 160
+#define WINDOW_HEIGHT 1080
+//#define WINDOW_HEIGHT 144
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -114,8 +114,32 @@ ILuint TextureILLoad(char *path) {
 	return id;
 }
 
+GLuint vao;
+GLuint vbo;
+GLuint ebo;
+GLuint program;
+GLuint vert;
+GLuint frag;
+GLuint texture;
+
+CrewStatus WindowGLDestroy() {
+	glDeleteTextures(1, &texture);
+
+	glDeleteProgram(program);
+	glDeleteShader(frag);
+	glDeleteShader(vert);
+
+	glDeleteBuffers(1, &ebo);
+	glDeleteBuffers(1, &vbo);
+
+	glDeleteVertexArrays(1, &vao);
+
+	return CUT;
+}
+
 CrewStatus WindowGLInit(Crew *c) {
 	c->update =  WindowGLUpdate;
+	c->destroy = WindowGLDestroy;
 
 	if (SDL_Init(SDL_INIT_VIDEO)) {
 		puts("failed to create window");
@@ -149,7 +173,6 @@ CrewStatus WindowGLInit(Crew *c) {
 
 	glClearColor(0.f, 1.f, 0.f, 1.f);
 
-	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -161,12 +184,10 @@ CrewStatus WindowGLInit(Crew *c) {
     		-0.5f, -0.5f, 0.0f, 1.0f  // Bottom-left
 	};
 
-	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	GLuint ebo;
 	glGenBuffers(1, &ebo);
 
 	GLuint elements[] = {
@@ -177,12 +198,12 @@ CrewStatus WindowGLInit(Crew *c) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-	GLuint program = glCreateProgram();
+	program = glCreateProgram();
 
-	GLuint vert = ShaderLoad("./shaders/default.vert", GL_VERTEX_SHADER);
+	vert = ShaderLoad("./shaders/default.vert", GL_VERTEX_SHADER);
 	glAttachShader(program, vert);
 
-	GLuint frag = ShaderLoad("./shaders/default.frag", GL_FRAGMENT_SHADER);
+	frag = ShaderLoad("./shaders/default.frag", GL_FRAGMENT_SHADER);
 	glAttachShader(program, frag);
 
 	glBindFragDataLocation(program, 0, "outColor");
@@ -201,13 +222,12 @@ CrewStatus WindowGLInit(Crew *c) {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	GLuint texture = TextureILLoad("png/george-goblin.png");
+	texture = TextureILLoad("png/george-goblin.png");
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	GLuint w = ilGetInteger(IL_IMAGE_WIDTH), h = ilGetInteger(IL_IMAGE_HEIGHT);
 	GLuint *pixels = (GLuint *) ilGetData();
-
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
