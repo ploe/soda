@@ -21,6 +21,8 @@ const char *platform = NULL;
 #define WINDOW_FPS 60
 #define WINDOW_TICKS (1000 / WINDOW_FPS)
 
+#include <IL/il.h>
+
 /*	Method that renders the Window and checks to see if the 
 	player has clicked the QUIT button. If so, we tear down the 
 	app.	*/
@@ -86,7 +88,7 @@ SDL_Renderer *WindowGetRenderer() {
 CrewStatus WindowGLUpdate(Crew *c) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	SDL_GL_SwapWindow(window);
 	
 	return LIVE;
@@ -100,6 +102,18 @@ CrewStatus SDL_WindowGLDestroy(Crew *c) {
 
 GLuint ShaderLoad(char *path, GLenum type);
 
+ILuint TextureILLoad(char *path) {
+	ILuint id = 0;
+	ilGenImages(1, &id);
+	ilBindImage(id);
+
+	if ( ilLoadImage(path) == IL_TRUE ) {
+		if (!ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE)) Panic(-1, "oh my!");
+	}
+
+	return id;
+}
+
 CrewStatus WindowGLInit(Crew *c) {
 	c->update =  WindowGLUpdate;
 
@@ -107,6 +121,8 @@ CrewStatus WindowGLInit(Crew *c) {
 		puts("failed to create window");
 		return EXIT;
 	}
+
+	ilInit();
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -138,9 +154,11 @@ CrewStatus WindowGLInit(Crew *c) {
 	glBindVertexArray(vao);
 
 	float vertices[] = {
-		0.0f,  1.0f, // Vertex 1 (X, Y)
-     		-1.0f, -1.0f, // Vertex 2 (X, Y)
-    		1.0f, -1.0f  // Vertex 3 (X, Y)
+		//  Position      Color             Texcoords
+    		-0.5f,  0.5f, 0.0f, 0.0f, // Top-left
+     		0.5f,  0.5f, 1.0f, 0.0f, // Top-right
+     		0.5f, -0.5f, 1.0f, 1.0f, // Bottom-right
+    		-0.5f, -0.5f, 0.0f, 1.0f  // Bottom-left
 	};
 
 	GLuint vbo;
@@ -148,6 +166,16 @@ CrewStatus WindowGLInit(Crew *c) {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+	GLuint ebo;
+	glGenBuffers(1, &ebo);
+
+	GLuint elements[] = {
+		0, 1, 2,
+		2, 3, 0
+    	};
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
 	GLuint program = glCreateProgram();
 
@@ -163,8 +191,29 @@ CrewStatus WindowGLInit(Crew *c) {
 	glUseProgram(program);
 
 	GLint position = glGetAttribLocation(program, "position");
-	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
 	glEnableVertexAttribArray(position);
+
+	GLint texcoord = glGetAttribLocation(program, "texcoord");
+	glEnableVertexAttribArray(texcoord);
+	glVertexAttribPointer(texcoord, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	GLuint texture = TextureILLoad("png/george-goblin.png");
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	GLuint w = ilGetInteger(IL_IMAGE_WIDTH), h = ilGetInteger(IL_IMAGE_HEIGHT);
+	GLuint *pixels = (GLuint *) ilGetData();
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	return LIVE;
 }
