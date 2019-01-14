@@ -3,7 +3,11 @@ compile = cc -g -O2 -I./include
 SDL_FLAGS := `pkg-config sdl2 SDL2_image --cflags --libs`
 SDL_CFLAGS := `pkg-config sdl2 SDL2_image --cflags`
 
-GL_FLAGS := -framework OpenGL `pkg-config glew ILU --cflags --libs` 
+GL_FLAGS := `pkg-config glew ILU --cflags --libs`
+ifeq ($(UNAME), Darwin)
+	GL_FLAGS := -framework OpenGL $(GL_FLAGS)
+endif
+
 GL_CFLAGS := `pkg-config glew ILU --cflags`
 
 LUA_FLAGS := `pkg-config lua5.3 --cflags --libs`
