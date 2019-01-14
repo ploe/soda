@@ -1,5 +1,7 @@
 compile = cc -g -O2 -I./include
 
+UNAME := $(shell uname -s)
+
 SDL_FLAGS := `pkg-config sdl2 SDL2_image --cflags --libs`
 SDL_CFLAGS := `pkg-config sdl2 SDL2_image --cflags`
 
@@ -16,6 +18,7 @@ LUA_CFLAGS := `pkg-config lua5.3 --cflags`
 ALL_CFLAGS := $(SDL_CFLAGS) $(LUA_CFLAGS) $(GL_CFLAGS)
 
 app: ./src/main.c ./src/Actors.c ./src/Crew.c ./src/Event.c ./src/LuaState.c ./src/Joystick.c ./src/Panic.c ./src/Text.c Window.o
+	echo "$(GL_FLAGS)" "$(UNAME)"
 	$(compile) $^ -o $@ $(SDL_FLAGS) $(LUA_FLAGS) $(GL_FLAGS)
 
 Window.o: ./src/Window/Common.c ./src/Window/OpenGL.c ./src/Window/SDL.c
