@@ -24,8 +24,6 @@ int main(int argc, char *argv[]) {
 		NULL
 	);
 
-	ArgsParse("hi:elo", argc, argv);
-
 	LuaImport("bootstrap.lua");
 	while (CrewRoll()) continue;
 
