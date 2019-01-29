@@ -149,8 +149,11 @@ static Actor *ActorRender(Actor *a) {
 typedef Actor *(*ActorMethod)(Actor *);
 
 static void ActorsForEach(ActorMethod method) {
-	Actor *a;
-	for (a = top; a != NULL; a = a->next) method(a);
+	Actor *a, *next = NULL;
+	for (a = top; a != NULL; a = next) {
+		next = a->next;
+		method(a);
+	}
 }
 
 static CrewStatus ActorsUpdate(Crew *c) {

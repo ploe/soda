@@ -33,6 +33,7 @@ Crew *CrewDestroy(Crew *c) {
 	if (*current) {
 		*current = c->next;
 		if (c->destroy) c->destroy(c);
+		free(c);
 	}
 
 	return NULL;
@@ -72,6 +73,5 @@ bool CrewRoll() {
 }
 
 void CrewPurge() {
-	Crew *c;
-	for (c = top; c != NULL; c = c->next) CrewDestroy(c);
+	while ( top ) CrewDestroy(top);
 }

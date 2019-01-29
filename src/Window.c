@@ -36,7 +36,10 @@ static CrewStatus WindowUpdate(Crew *c) {
 	SDL_Window.	*/
 static CrewStatus WindowDestroy(Crew *c) {
 	SDL_DestroyRenderer(renderer);
+	renderer = NULL;
+
 	SDL_DestroyWindow(window);
+	window = NULL;
 
 	SDL_Quit();
 
