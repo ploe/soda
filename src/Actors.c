@@ -9,13 +9,20 @@
 #include "Crew.h"
 #include "LuaState.h"
 #include "Panic.h"
+#include "Text.h"
 #include "Window.h"
 
-static SDL_Texture *TextureNew(char *path, SDL_Renderer *renderer) {
+static SDL_Texture *TextureNew(char *path) {
 	SDL_Texture *t = NULL;
 	SDL_Surface *surface = IMG_Load(path);
-	t = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_FreeSurface(surface);
+	
+	if (surface) {
+		SDL_Renderer *renderer = WindowGetRenderer();
+
+		t = SDL_CreateTextureFromSurface(renderer, surface);
+		SDL_FreeSurface(surface);
+	}
+
 	return t;
 }
 
@@ -24,6 +31,7 @@ typedef struct ActorSDLMembers {
 	SDL_Rect src, dest;
 	double angle;
 	SDL_RendererFlip flip;
+	Text filename;
 	Uint8 alpha;
 } ActorSDLMembers;
 
@@ -50,20 +58,40 @@ static Actor *ActorNew() {
 	return a;
 }
 
+static bool ActorSetTexture(Actor *a, Text filename) {
+	Text current = a->sdl.filename;
+	if (current && (strcmp(current, filename) != 0))
+		TextFree(current);
+	
+	a->sdl.filename = filename;
+
+	SDL_Texture *texture = a->sdl.texture;
+	if (texture) SDL_DestroyTexture(texture);
+
+	a->sdl.texture = texture = TextureNew(filename);
+
+	return (texture != NULL);
+}
+
 static int ActorLuaNew(lua_State *L) {
 	enum {
 		TABLE = 1
 	};
 
-	if (lua_istable(L, TABLE)) {
-		Actor *a = ActorNew();
-		a->lua.table = luaL_ref(L, LUA_REGISTRYINDEX);
-		lua_rawgeti(L, LUA_REGISTRYINDEX, a->lua.table);
-		
-		SDL_Renderer *renderer = WindowGetRenderer();
-		a->sdl.texture = TextureNew("./png/george-goblin.png", renderer);
-	}
-	else lua_pushnil(L);
+	if (!lua_istable(L, TABLE))
+		return luaL_error(L, "Actor.new: Expected table");
+
+	Actor *a = ActorNew();
+	a->lua.table = luaL_ref(L, LUA_REGISTRYINDEX);
+	lua_rawgeti(L, LUA_REGISTRYINDEX, a->lua.table);
+
+	Text filename = NULL;
+	a->render = LuaTableImportTexts(
+		"texture", &(filename), 
+		NULL, NULL
+	);
+
+	if (filename) ActorSetTexture(a, filename);
 
 	return 1;
 }

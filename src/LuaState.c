@@ -56,18 +56,40 @@ bool LuaBind(const char *table, const char *key, lua_CFunction func, ...) {
 
 /*	LuaTableImporter that imports a single integer from the Lua 
 	table that's at the top of the stack to an integer in C. */
-bool LuaTableImportInt(const char *key, int *dest) {
+bool LuaTableImportInt(const char *key, void *dest) {
+	enum {
+		TOP = -1
+	};
+
+	int *integer =  (int *) dest;
+
+	bool set = false;
+	lua_getfield(L, TOP, key);
+	if (lua_isnumber(L, TOP)) {
+		(*integer) = lua_tointeger(L, TOP);
+		set = true;
+	}
+
+	lua_pop(L, 1);
+
+	return set;
+}
+
+bool LuaTableImportText(const char *key, void *dest) {
 	enum {
 		TOP = -1
 	};
 
 	bool set = false;
+	Text *text = (Text *) dest;
 
 	lua_getfield(L, TOP, key);
-	if (lua_isnumber(L, TOP)) {
-		(*dest) = lua_tointeger(L, TOP);
+	if (lua_isstring(L, TOP)) {
+		const char *str = lua_tostring(L, TOP);
+		(*text) = TextNew(str);
 		set = true;
 	}
+	
 	lua_pop(L, 1);
 
 	return set;

@@ -5,11 +5,15 @@
 
 #include <lua.h>
 
-typedef bool (*LuaTableImporter)(const char *key, int *dest);
-bool LuaTableImportInt(const char *key, int *dest);
+#include "Text.h"
+
+typedef bool (*LuaTableImporter)(const char *key, void *dest);
+bool LuaTableImportInt(const char *key, void *dest);
+bool LuaTableImportText(const char *key, void *dest);
 bool LuaTableImport(LuaTableImporter import, void *key, void *dest, ...);
 
 #define LuaTableImportInts(key, dest, ...) LuaTableImport(LuaTableImportInt, key, dest, __VA_ARGS__)
+#define LuaTableImportTexts(key, dest, ...) LuaTableImport(LuaTableImportText, key, dest, __VA_ARGS__)
 
 lua_State *LuaInit();
 bool LuaImportWithStack(const char *file, int nargs, int nresults);

@@ -5,6 +5,7 @@ print('hello, world')
 
 a = Actor.new {
 	alpha = 255,
+	texture = './png/george-goblin.png',
 	x = 0,
 	y = 0,
 	w = 128,
