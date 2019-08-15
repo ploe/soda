@@ -23,7 +23,7 @@ lua_State *LuaInit() {
 	return L;
 }
 
-bool LuaBind(const char *table, const char *key, lua_CFunction func, ...) {
+int LuaBind(const char *table, const char *key, lua_CFunction func, ...) {
 	enum {
 		TABLE_GET = -1,
 		TABLE_SET = -2,
@@ -32,26 +32,21 @@ bool LuaBind(const char *table, const char *key, lua_CFunction func, ...) {
 
 	va_list vl;
 	va_start(vl, func);
-	while (key && func) {
-		lua_getglobal(L, table);
-		if (lua_isnil(L, TABLE_GET)) {
-			lua_pop(L, NIL);
-			lua_newtable(L);
-		}
 
-		if (lua_istable(L, TABLE_GET)) {
-			lua_pushcfunction(L, func);
-			lua_setfield(L, TABLE_SET, key);
-			lua_setglobal(L, table);
-		}
-		else Panic(ELUA, "namespace is already set in Lua state.");
+	lua_newtable(L);
+	while (key && func) {
+		lua_pushcfunction(L, func);
+		lua_setfield(L, TABLE_SET, key);
 
 		key = (const char *) va_arg(vl, const char *);
 		func = va_arg(vl, void *);
 	}
 	va_end(vl);
 
-	return true;
+	if (!table) luaL_ref(L, LUA_REGISTRYINDEX);
+
+	lua_setglobal(L, table);
+	return 0;
 }
 
 /*	LuaTableImporter that imports a single integer from the Lua 

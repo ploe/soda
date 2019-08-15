@@ -21,7 +21,7 @@ bool LuaImportWithStack(const char *file, int nargs, int nresults);
 void LuaFetchNestedTableByIndex(lua_State *L, int index, int n);
 void LuaFetchNestedTableByKey(lua_State *L, int index, const char *key);
 lua_State *LuaGet();
-bool LuaBind(const char *table, const char *key, lua_CFunction func, ...);
+int LuaBind(const char *table, const char *key, lua_CFunction func, ...);
 bool LuaKeysToInts(const char *key,  int *integer, ...);
 bool LuaDestroy();
 
